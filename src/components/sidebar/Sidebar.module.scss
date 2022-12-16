@@ -1,0 +1,8 @@
+.sidebar {
+  grid-area: b;
+  border-right: 1px solid rgba(128, 128, 128, 0.5);
+
+  .box {
+    padding: 10px;
+  }
+}
