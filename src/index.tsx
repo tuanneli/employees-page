@@ -2,25 +2,25 @@ import React, {createContext} from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.scss';
 import App from './App';
-import UsersStore from "./store/UsersStore";
+import EmployeeStore from "./store/EmployeeStore";
 
 const root = ReactDOM.createRoot(
     document.getElementById('root') as HTMLElement
 );
 
 interface IStore {
-    usersStore: UsersStore
+    employeeStore: EmployeeStore
 }
 
-const usersStore = new UsersStore();
+const employeeStore = new EmployeeStore();
 
 export const Context = createContext<IStore>({
-    usersStore
+    employeeStore
 })
 
 root.render(
     <Context.Provider value={{
-        usersStore
+        employeeStore
     }}>
         <App/>
     </Context.Provider>

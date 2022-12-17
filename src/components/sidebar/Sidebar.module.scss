@@ -1,8 +1,31 @@
 .sidebar {
   grid-area: b;
   border-right: 1px solid rgba(128, 128, 128, 0.5);
+  max-height: calc(100vh - 60px);
 
   .box {
     padding: 10px;
+
+    &__item {
+      padding: 20px 20px;
+      margin: 10px 0;
+      cursor: pointer;
+      user-select: none;
+      border-radius: 10px;
+
+      &:hover {
+        background-color: rgba(128, 128, 128, 0.25);
+      }
+
+      &:active {
+        background-color: rgba(128, 128, 128, 0.5);
+      }
+    }
+
+    &__new_employee {
+    }
+
+    &__employees_list {
+    }
   }
 }
