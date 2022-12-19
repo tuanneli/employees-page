@@ -8,47 +8,66 @@ import EmployeesPageNavigation from "./employeePageNavigation/EmployeesPageNavig
 import {IEmployee} from "../../types/UsersTypes";
 import AddEmployee from "./addEmployee/AddEmployee";
 import SortingColumns from "./sortingColumns/SortingColumns";
+import PageStateStore from "../../store/PageStateStore";
 
 interface IEmployeesPage {
     showAddEmployee: boolean,
     setShowAddEmployee: Dispatch<boolean>
     setEmployeeToEdit: Dispatch<IEmployee | null>
     employeeToEdit: IEmployee | null
+    store: typeof PageStateStore.prototype
 }
 
 const EmployeesPage = observer(({
                                     showAddEmployee,
                                     setShowAddEmployee,
                                     setEmployeeToEdit,
-                                    employeeToEdit
+                                    employeeToEdit,
+                                    store
                                 }: IEmployeesPage) => {
     const {employeeStore} = useContext(Context);
     const [amountOfPages, setAmountOfPages] = useState(1);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [currentListOfPages, setCurrentListOfPages] = useState<IEmployee[]>([]);
-    const [toggle, setToggle] = useState(false);
+    const [toggle, setToggle] = useState(true);
+
+    const setListOfPages = () => store.setCurrentListOfPages(employeeStore._employees.slice(20 * (store.currentPage - 1), 20 * (store.currentPage - 1) + 20)
+        .sort(function (a, b): any {
+            if (store.sortByWord && store.sortByWord !== 'id') {
+                return store.toggle ?
+                    ('' + a[store.sortByWord as keyof IEmployee]).localeCompare(b[store.sortByWord as keyof IEmployee]) :
+                    ('' + b[store.sortByWord as keyof IEmployee]).localeCompare(a[store.sortByWord as keyof IEmployee]);
+            } else {
+                return store.toggle ?
+                    (parseInt(a[store.sortByWord as keyof IEmployee])) - parseInt(b[store.sortByWord as keyof IEmployee]) :
+                    (parseInt(b[store.sortByWord as keyof IEmployee])) - parseInt(a[store.sortByWord as keyof IEmployee])
+            }
+        }));
 
     useEffect(() => {
         employeeStore.fetchEmployees()
             .then(() => {
                 setAmountOfPages(Math.ceil(employeeStore.employees.length / 20));
-                setCurrentListOfPages(employeeStore._employees.slice(20 * (currentPage - 1), 20 * (currentPage - 1) + 20));
+                setListOfPages();
             });
     }, []);
 
+
     useEffect(() => {
-        setCurrentListOfPages(employeeStore._employees.slice(20 * (currentPage - 1), 20 * (currentPage - 1) + 20));
-    }, [currentPage, showAddEmployee]);
+        store.setCurrentListOfPages(employeeStore._employees.slice(20 * (store.currentPage - 1), 20 * (store.currentPage - 1) + 20));
+        setListOfPages();
+    }, [store.currentListOfPages[0]?.id, store.currentPage, showAddEmployee]);
 
     return (
         <nav className={classes.main}>
-            <SortingColumns setToggle={setToggle} toggle={toggle}/>
-            <EmployeesBox setShowAddEmployee={setShowAddEmployee}
-                          currentListOfPages={currentListOfPages}
-                          setEmployeeToEdit={setEmployeeToEdit}
-                          setCurrentListOfPages={setCurrentListOfPages}/>
-            <EmployeesPageNavigation currentPage={currentPage} amountOfPages={amountOfPages}
-                                     setCurrentPage={setCurrentPage}/>
+            <SortingColumns store={store}
+                            setToggle={setToggle}
+                            toggle={toggle}/>
+            <EmployeesBox store={store}
+                          tog={toggle}
+                          setShowAddEmployee={setShowAddEmployee}
+                          setEmployeeToEdit={setEmployeeToEdit}/>
+            <EmployeesPageNavigation store={store}
+                                     currentPage={store.currentPage}
+                                     amountOfPages={amountOfPages}/>
             {showAddEmployee && <AddEmployee employeeToEdit={employeeToEdit} setShowAddEmployee={setShowAddEmployee}/>}
         </nav>
     );

@@ -59,6 +59,11 @@
     cursor: pointer;
     user-select: none;
 
+    &_active {
+      background-color: rgba(0, 0, 255, 0.7);
+      border-radius: 5px;
+    }
+
     &__text {
       display: flex;
       align-items: center;

@@ -1,6 +1,9 @@
 import {makeAutoObservable} from "mobx";
 import {IEmployee} from "../types/UsersTypes";
 import {EmployeesService} from "../api/API";
+import EmployeesPage from "../components/main/EmployeesPage";
+import {v4 as uuid} from "uuid";
+import PageStateStore from "./PageStateStore";
 
 export default class EmployeeStore {
 
@@ -10,10 +13,24 @@ export default class EmployeeStore {
         makeAutoObservable(this)
     }
 
-    _categoriesToShow: Array<string> = [];
+    _openPages: Array<{
+        id: string,
+        EmployeesPage: typeof EmployeesPage,
+        store: typeof PageStateStore.prototype
+    }> = [{
+        id: uuid(),
+        EmployeesPage,
+        store: new PageStateStore
+    }]
 
-    get categoriesToShow() {
-        return this._categoriesToShow;
+    get openPages() {
+        return this._openPages;
+    }
+
+    _currentOpenPageId: string = this._openPages[0].id;
+
+    get currentOpenPageId() {
+        return this._currentOpenPageId;
     }
 
     _employees: Array<IEmployee> = [];
@@ -22,14 +39,8 @@ export default class EmployeeStore {
         return this._employees;
     }
 
-    _openPages: Array<number> = [1];
-
-    get openPages() {
-        return this._openPages;
-    }
-
-    setCategoriesToShow(list: Array<string>) {
-        this._categoriesToShow = list;
+    setCurrentOpenPageId(id: string) {
+        this._currentOpenPageId = id;
     }
 
     setEmployees(employees: IEmployee[]) {
@@ -37,16 +48,11 @@ export default class EmployeeStore {
     }
 
     addOpenPage() {
-        console.log(Math.max.apply(Math, this._openPages))
-        if (Math.max.apply(Math, this._openPages) > 0) {
-            this._openPages.push(Math.max.apply(Math, this._openPages) + 1);
-        } else {
-            this._openPages.push(1)
-        }
+        this._openPages.push({id: uuid(), EmployeesPage, store: new PageStateStore})
     }
 
-    deleteOpenPage(num: number) {
-        this._openPages = this._openPages.filter(number => number != num);
+    deleteOpenPage(id: string) {
+        this._openPages = this._openPages.filter(item => item.id !== id);
     }
 
     shiftOpenPage() {
@@ -58,7 +64,6 @@ export default class EmployeeStore {
             this._isLoading = true;
             const response = await EmployeesService.fetchEmployee();
             this.setEmployees(response);
-            this._categoriesToShow = Object.keys(this._employees[0]);
         } catch (e: any) {
             console.log("Error");
             console.log(e);

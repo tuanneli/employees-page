@@ -57,6 +57,13 @@ const AddEmployee = ({setShowAddEmployee, employeeToEdit}: IAddEmployee) => {
         }
     }
 
+    const deleteEmployee = async (e: any) => {
+        e.stopPropagation();
+        await EmployeesService.deleteEmployee(id)
+            .then(() => employeeStore.fetchEmployees());
+        setShowAddEmployee(false);
+    }
+
     return (
         <div className={classes.add_employee_container}>
             <div onClick={() => setShowAddEmployee(false)} className={classes.add_employee_container__bg}/>
@@ -91,10 +98,16 @@ const AddEmployee = ({setShowAddEmployee, employeeToEdit}: IAddEmployee) => {
                 </div>
                 {error && <Error errorText={error}/>}
                 <div className={classes.add_employee_box__input_container}>
-                    <button onClick={createEmployee}
-                            className={classes.add_employee_box__button}>
-                        Submit
-                    </button>
+                    <div className={classes.add_employee_box__buttons}>
+                        <button onClick={createEmployee}
+                                className={`${classes.add_employee_box__button} ${classes.add_employee_box__submit}`}>
+                            Submit
+                        </button>
+                        {employeeToEdit !== null && <button onClick={deleteEmployee}
+                                                            className={`${classes.add_employee_box__button} ${classes.add_employee_box__delete}`}>
+                            Delete
+                        </button>}
+                    </div>
                 </div>
             </div>
         </div>

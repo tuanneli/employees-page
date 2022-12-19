@@ -1,27 +1,59 @@
-import React, {Dispatch, useContext, useEffect, useState} from 'react';
+import React, {Dispatch, useState} from 'react';
 import {MoreVert} from "@mui/icons-material";
 import classes from './SortingColumns.module.scss';
-import {Context} from "../../../index";
+import PageStateStore from "../../../store/PageStateStore";
 
 interface ISortingColumns {
     setToggle: Dispatch<boolean>
     toggle: boolean
+    store: typeof PageStateStore.prototype
 }
 
-const SortingColumns = ({setToggle, toggle}: ISortingColumns) => {
+const SortingColumns = ({setToggle, toggle, store}: ISortingColumns) => {
 
-    const {employeeStore} = useContext(Context);
     const [showSortingColumn, setShowSortingColumn] = useState(false);
+    const [currentItem, setCurrentItem] = useState<null | { id: number, name: string }>(null)
 
-    const handleToggle = (e: any, item: string) => {
+    const handleToggle = (e: any, item: { id: number, name: string }) => {
         if (e.target.checked) {
-            employeeStore.setCategoriesToShow([...employeeStore.categoriesToShow, item]);
+            store.setCategoriesToShow([...store.categoriesToShow, item]);
         } else {
-            employeeStore.setCategoriesToShow(employeeStore.categoriesToShow.filter(category => category !== item));
+            store.setCategoriesToShow(store.categoriesToShow.filter(category => category.name !== item.name));
         }
         setToggle(!toggle);
     }
 
+    function dragOverHandler(e: any) {
+        e.preventDefault()
+        e.target.style.boxShadow = '0 4px 3px gray'
+    }
+
+    function dragLeaveHandler(e: any) {
+        e.target.style.boxShadow = 'none'
+    }
+
+    function dragStartHandler(e: any, item: { id: number, name: string }) {
+        setCurrentItem(item);
+    }
+
+    function dragEndHandler(e: any) {
+        e.target.style.boxShadow = 'none'
+    }
+
+    function dropHandler(e: any, category: { id: number, name: string }) {
+        e.target.style.boxShadow = 'none'
+        e.preventDefault()
+        store.setCategoriesToShowInfo(store.categoriesToShowInfo.map(c => {
+            if (category.id === c.id) {
+                return {...c, id: currentItem?.id!}
+            }
+            if (currentItem?.id === c.id) {
+                return {...c, id: category.id}
+            }
+            return c;
+        }));
+        setToggle(!toggle);
+    }
 
     return (
         <div className={classes.navbar}>
@@ -30,41 +62,25 @@ const SortingColumns = ({setToggle, toggle}: ISortingColumns) => {
                 className={classes.navbar__icon}/>
             {showSortingColumn &&
                 <div className={`${classes.navbar__menu} ${classes.menu}`}>
-                    <div className={classes.menu__row}>
-                        <input onClick={(e) => handleToggle(e, "id")}
-                               defaultChecked
-                               className={`${classes.menu__checkbox} ${classes.menu__item}`}
-                               type="checkbox"/>
-                        <div className={`${classes.menu__text} ${classes.menu__item}`}>ID</div>
-                    </div>
-                    <div className={classes.menu__row}>
-                        <input onClick={(e) => handleToggle(e, "name")}
-                               defaultChecked
-                               className={`${classes.menu__checkbox} ${classes.menu__item}`}
-                               type="checkbox"/>
-                        <div className={`${classes.menu__text} ${classes.menu__item}`}>NAME</div>
-                    </div>
-                    <div className={classes.menu__row}>
-                        <input onClick={(e) => handleToggle(e, "sex")}
-                               defaultChecked
-                               className={`${classes.menu__checkbox} ${classes.menu__item}`}
-                               type="checkbox"/>
-                        <div className={`${classes.menu__text} ${classes.menu__item}`}>SEX</div>
-                    </div>
-                    <div className={classes.menu__row}>
-                        <input onClick={(e) => handleToggle(e, "job")}
-                               defaultChecked
-                               className={`${classes.menu__checkbox} ${classes.menu__item}`}
-                               type="checkbox"/>
-                        <div className={`${classes.menu__text} ${classes.menu__item}`}>JOB</div>
-                    </div>
-                    <div className={classes.menu__row}>
-                        <input onClick={(e) => handleToggle(e, "birthday")}
-                               defaultChecked
-                               className={`${classes.menu__checkbox} ${classes.menu__item}`}
-                               type="checkbox"/>
-                        <div className={`${classes.menu__text} ${classes.menu__item}`}>BIRTHDAY</div>
-                    </div>
+                    {store.categoriesToShowInfo.map(category => {
+                        return <div onDragOver={(e) => dragOverHandler(e)}
+                                    onDragLeave={e => dragLeaveHandler(e)}
+                                    onDragStart={(e) => dragStartHandler(e, category)}
+                                    onDragEnd={(e) => dragEndHandler(e)}
+                                    onDrop={(e) => dropHandler(e, category)}
+                                    draggable={true}
+                                    key={category.id}
+                                    className={classes.menu__row}>
+                            <input onClick={(e) => handleToggle(e,
+                                store.categoriesToShowInfo.find(item => item.name === category.name)!
+                            )}
+                                   defaultChecked
+                                   className={`${classes.menu__checkbox} ${classes.menu__item}`}
+                                   type="checkbox"/>
+                            <div
+                                className={`${classes.menu__text} ${classes.menu__item}`}>{category.name.toUpperCase()}</div>
+                        </div>
+                    })}
                 </div>}
         </div>
     );

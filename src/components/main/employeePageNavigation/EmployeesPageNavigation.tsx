@@ -1,13 +1,15 @@
 import React, {Dispatch, useState} from 'react';
 import classes from '../EmployeesPage.module.scss';
+import PageStateStore from "../../../store/PageStateStore";
+import {observer} from "mobx-react-lite";
 
 interface IProps {
     currentPage: number,
     amountOfPages: number,
-    setCurrentPage: Dispatch<number>
+    store: typeof PageStateStore.prototype
 }
 
-const EmployeesPageNavigation = ({currentPage, amountOfPages, setCurrentPage}: IProps) => {
+const EmployeesPageNavigation = ({currentPage, amountOfPages, store}: IProps) => {
     let pages: number[] = []
     const portionSize: number = 5;
     let leftPortion: number;
@@ -32,7 +34,7 @@ const EmployeesPageNavigation = ({currentPage, amountOfPages, setCurrentPage}: I
             {pages
                 .filter(pages => pages >= leftPortion && pages <= rightPortion)
                 .map(page => <p key={page}
-                                onClick={() => setCurrentPage(page)}
+                                onClick={() => store.setCurrentPage(page)}
                                 className={page === currentPage ?
                                     `${classes.navigation_box__current_page} ${classes.navigation_box__page}` :
                                     classes.navigation_box__page}>
@@ -42,4 +44,4 @@ const EmployeesPageNavigation = ({currentPage, amountOfPages, setCurrentPage}: I
     );
 };
 
-export default EmployeesPageNavigation;
+export default observer(EmployeesPageNavigation);

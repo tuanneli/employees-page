@@ -1,14 +1,10 @@
-import React, {useContext, useState} from 'react';
+import React, {useContext} from 'react';
 import './Navbar.module.scss';
 import {observer} from "mobx-react-lite";
 import classes from './Navbar.module.scss';
 import {Context} from "../../index";
 
 const Navbar = observer(() => {
-
-    const [isActive, setIsActive] = useState('explore');
-    const [showAddAServer, setShowAddAServer] = useState(false);
-    const [showDownloads, setShowDownloads] = useState(false);
 
     const {employeeStore} = useContext(Context);
 
@@ -20,9 +16,13 @@ const Navbar = observer(() => {
                 </div>
                 <div className={`${classes.box__pages} ${classes.page}`}>
                     {employeeStore._openPages.map((page) => {
-                        return <div key={page} className={`${classes.page__title} ${classes.title}`}>
+                        return <div key={page.id}
+                                    onClick={() => employeeStore.setCurrentOpenPageId(page.id)}
+                                    className={`${classes.page__title} 
+                                    ${classes.title} 
+                                    ${employeeStore.currentOpenPageId === page.id && classes.title_active}`}>
                             <div className={`${classes.title__text}`}>Список сотрудников</div>
-                            <button onClick={() => employeeStore.deleteOpenPage(page)}
+                            <button onClick={() => employeeStore.deleteOpenPage(page.id)}
                                     className={`${classes.title__close}`}>x
                             </button>
                         </div>

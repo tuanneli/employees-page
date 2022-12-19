@@ -1,11 +1,9 @@
-import {AxiosResponse} from "axios";
 import {$host, baseURL} from "./http";
 import {IEmployee} from "../types/UsersTypes";
 
 export class EmployeesService {
     static async fetchEmployee(): Promise<IEmployee[]> {
         const response = await $host.get<IEmployee[]>(`${baseURL}/tasks`);
-        // console.log(response.data)
         return response.data;
     }
 
